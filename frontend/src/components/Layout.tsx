@@ -28,7 +28,7 @@ export default function Layout() {
         </div>
       </header>
 
-      <nav className="bg-white border-b border-gray-200 px-6 flex gap-1">
+      <nav className="bg-white border-b border-gray-200 flex justify-center gap-1">
         {(Object.keys(TAB_LABELS) as Tab[]).map(t => (
           <button
             key={t}

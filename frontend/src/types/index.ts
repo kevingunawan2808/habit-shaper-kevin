@@ -36,6 +36,7 @@ export interface GoalHabit {
   id: number;
   name: string;
   type: HabitType;
+  streak: number;
 }
 
 export interface Goal {

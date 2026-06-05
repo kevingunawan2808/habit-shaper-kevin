@@ -3,6 +3,31 @@ import { api } from '../../api/client';
 import type { Habit } from '../../types';
 import AddHabitModal from './AddHabitModal';
 
+const PRAISE = [
+  '🎉 Crushed it!',
+  '🔥 On fire!',
+  '⭐ Nailed it!',
+  '💪 Beast mode!',
+  '🚀 Keep soaring!',
+  '✨ Brilliant!',
+  '🏆 Champion!',
+  '😤 Unstoppable!',
+];
+
+const MOTIVATION = [
+  "💪 Rise again!",
+  "🌅 Tomorrow's a new day",
+  "❤️ You've got this",
+  "🔄 Reset & rebuild",
+  "🌱 Setbacks build strength",
+  "🧠 Awareness is progress",
+  "🕊️ Be kind to yourself",
+];
+
+function pickMessage(list: string[], id: number) {
+  return list[id % list.length];
+}
+
 export default function HabitsTab() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +106,7 @@ export default function HabitsTab() {
                 <td className="px-4 py-3">
                   {habit.type === 'BUILDING' ? (
                     habit.marked_today ? (
-                      <span className="text-xs text-green-600 font-medium">✓ Done</span>
+                      <span className="text-sm font-semibold text-green-600">{pickMessage(PRAISE, habit.id)}</span>
                     ) : (
                       <button
                         onClick={() => doMark(habit.id, 'COMPLETED')}
@@ -93,7 +118,7 @@ export default function HabitsTab() {
                     )
                   ) : (
                     habit.marked_today ? (
-                      <span className="text-xs text-red-600 font-medium">✗ Relapsed</span>
+                      <span className="text-sm font-semibold text-orange-500">{pickMessage(MOTIVATION, habit.id)}</span>
                     ) : (
                       <button
                         onClick={() => setConfirmId(habit.id)}
@@ -122,17 +147,20 @@ export default function HabitsTab() {
       {confirmId !== null && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Confirm Relapse</h3>
-            <p className="text-sm text-gray-600 mb-4">Are you sure? This resets your streak.</p>
+            <p className="text-3xl mb-3">😔</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">It happens to everyone</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Acknowledging a slip is already a sign of strength. Your streak will reset — but your commitment doesn't have to.
+            </p>
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmId(null)} className="text-sm text-gray-600 hover:underline">
-                Cancel
+                Actually, I'm okay
               </button>
               <button
                 onClick={() => doMark(confirmId, 'RELAPSED')}
                 className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded"
               >
-                Yes, relapsed
+                Record relapse
               </button>
             </div>
           </div>

@@ -1,5 +1,11 @@
 import { Request, Response } from 'express';
 import { Pool, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
+import { getLocalDateString, addDaysToDateString, dateDiffInDays } from '../utils/timezone.utils';
+
+function toDateStr(val: unknown): string {
+  if (val instanceof Date) return val.toISOString().slice(0, 10);
+  return String(val).slice(0, 10);
+}
 
 export class GoalsController {
   constructor(private pool: Pool) {}
@@ -7,11 +13,25 @@ export class GoalsController {
   async getGoals(req: Request, res: Response): Promise<void> {
     const userId = req.user!.userId;
 
+    const [userRows] = await this.pool.query<RowDataPacket[]>(
+      'SELECT timezone FROM users WHERE id = ?',
+      [userId]
+    );
+    const timezone = (userRows[0]?.timezone as string) || 'UTC';
+    const today = getLocalDateString(timezone);
+    const yesterday = addDaysToDateString(today, -1);
+
     const [goals] = await this.pool.query<RowDataPacket[]>(
       `SELECT g.id, g.name, g.description, g.created_at,
          JSON_ARRAYAGG(
            IF(gh.habit_id IS NOT NULL,
-             JSON_OBJECT('id', h.id, 'name', h.name, 'type', h.type),
+             JSON_OBJECT(
+               'id', h.id, 'name', h.name, 'type', h.type,
+               'current_streak', h.current_streak,
+               'longest_streak', h.longest_streak,
+               'last_log', h.last_log,
+               'streak_start_date', h.streak_start_date
+             ),
              NULL)
          ) AS habits
        FROM goals g
@@ -25,7 +45,22 @@ export class GoalsController {
 
     const data = goals.map((g) => ({
       ...g,
-      habits: ((g.habits as unknown[]) || []).filter(Boolean),
+      habits: ((g.habits as unknown[]) || []).filter(Boolean).map((h: unknown) => {
+        const habit = h as {
+          id: number; name: string; type: string;
+          current_streak: number; longest_streak: number;
+          last_log: unknown; streak_start_date: unknown;
+        };
+        let streak: number;
+        if (habit.type === 'BUILDING') {
+          const lastLog = habit.last_log ? toDateStr(habit.last_log) : null;
+          streak = (lastLog === today || lastLog === yesterday) ? habit.current_streak : 0;
+        } else {
+          const streakStart = habit.streak_start_date ? toDateStr(habit.streak_start_date) : today;
+          streak = Math.max(0, dateDiffInDays(streakStart, today));
+        }
+        return { id: habit.id, name: habit.name, type: habit.type, streak };
+      }),
     }));
 
     res.json({ success: true, data });

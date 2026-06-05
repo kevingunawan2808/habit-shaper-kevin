@@ -71,7 +71,8 @@ export default function GoalsTab() {
                       <tr className="text-left text-xs font-medium text-gray-500 uppercase">
                         <th className="pb-2 pr-4">#</th>
                         <th className="pb-2 pr-4">Habit Name</th>
-                        <th className="pb-2">Type</th>
+                        <th className="pb-2 pr-4">Type</th>
+                        <th className="pb-2">Current Streak</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -79,18 +80,19 @@ export default function GoalsTab() {
                         <tr key={habit.id}>
                           <td className="py-2 pr-4 text-gray-500">{i + 1}</td>
                           <td className="py-2 pr-4 font-medium text-gray-900">{habit.name}</td>
-                          <td className="py-2">
+                          <td className="py-2 pr-4">
                             {habit.type === 'BUILDING' ? (
                               <span className="px-2 py-0.5 rounded text-xs bg-green-100 text-green-700">BUILD</span>
                             ) : (
                               <span className="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">BREAK</span>
                             )}
                           </td>
+                          <td className="py-2 text-gray-700">{habit.streak} days</td>
                         </tr>
                       ))}
                       {goal.habits.length === 0 && (
                         <tr>
-                          <td colSpan={3} className="py-4 text-center text-gray-400">
+                          <td colSpan={4} className="py-4 text-center text-gray-400">
                             No habits linked yet.
                           </td>
                         </tr>
