@@ -2,16 +2,18 @@ import { Request, Response } from 'express';
 import { Pool, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { HabitType, LogStatus } from '../types/habit.types';
 import { HabitMarkingService } from '../services/habit-marking.service';
-import { StreakService } from '../services/streak.service';
-import { getLocalDateString } from '../utils/timezone.utils';
+import { getLocalDateString, addDaysToDateString, dateDiffInDays } from '../utils/timezone.utils';
+
+function toDateStr(val: unknown): string {
+  if (val instanceof Date) return val.toISOString().slice(0, 10);
+  return String(val).slice(0, 10);
+}
 
 export class HabitsController {
   private markingService: HabitMarkingService;
-  private streakService: StreakService;
 
   constructor(private pool: Pool) {
     this.markingService = new HabitMarkingService(pool);
-    this.streakService = new StreakService(pool);
   }
 
   async getHabits(req: Request, res: Response): Promise<void> {
@@ -22,7 +24,8 @@ export class HabitsController {
       [userId]
     );
     const timezone = (userRows[0]?.timezone as string) || 'UTC';
-    const todayDate = getLocalDateString(timezone);
+    const today = getLocalDateString(timezone);
+    const yesterday = addDaysToDateString(today, -1);
 
     const [habits] = await this.pool.query<RowDataPacket[]>(
       `SELECT h.*, hl_today.status AS today_status
@@ -30,33 +33,36 @@ export class HabitsController {
        LEFT JOIN habit_logs hl_today ON hl_today.habit_id = h.id AND hl_today.logged_date = ?
        WHERE h.user_id = ?
        ORDER BY h.created_at ASC`,
-      [todayDate, userId]
+      [today, userId]
     );
 
-    const habitsWithStreak = await Promise.all(
-      habits.map(async (habit) => {
-        const [streak, longestStreak] = await Promise.all([
-          this.streakService.calculateStreak(
-            habit.id, timezone, habit.type as HabitType, habit.streak_start_date
-          ),
-          this.streakService.calculateLongestStreak(
-            habit.id, timezone, habit.type as HabitType, habit.streak_start_date, habit.created_at
-          ),
-        ]);
-        return {
-          id: habit.id,
-          name: habit.name,
-          type: habit.type,
-          streak_start_date: habit.streak_start_date,
-          created_at: habit.created_at,
-          streak,
-          longest_streak: longestStreak,
-          marked_today: habit.today_status !== null,
-        };
-      })
-    );
+    const result = habits.map((habit) => {
+      let streak: number;
+      let longestStreak: number;
 
-    res.json({ success: true, data: habitsWithStreak });
+      if (habit.type === HabitType.BUILDING) {
+        const lastLog = habit.last_log ? toDateStr(habit.last_log) : null;
+        streak = (lastLog === today || lastLog === yesterday) ? habit.current_streak : 0;
+        longestStreak = habit.longest_streak;
+      } else {
+        const streakStart = habit.streak_start_date ? toDateStr(habit.streak_start_date) : today;
+        streak = Math.max(0, dateDiffInDays(streakStart, today));
+        longestStreak = Math.max(habit.longest_streak, streak);
+      }
+
+      return {
+        id: habit.id,
+        name: habit.name,
+        type: habit.type,
+        streak_start_date: habit.streak_start_date,
+        created_at: habit.created_at,
+        streak,
+        longest_streak: longestStreak,
+        marked_today: habit.today_status !== null,
+      };
+    });
+
+    res.json({ success: true, data: result });
   }
 
   async createHabit(req: Request, res: Response): Promise<void> {

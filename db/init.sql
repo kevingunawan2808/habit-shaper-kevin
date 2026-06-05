@@ -12,6 +12,9 @@ CREATE TABLE IF NOT EXISTS habits (
   name VARCHAR(255) NOT NULL,
   type ENUM('BUILDING', 'BREAKING') NOT NULL,
   streak_start_date DATE NULL,
+  current_streak INT NOT NULL DEFAULT 0,
+  longest_streak INT NOT NULL DEFAULT 0,
+  last_log DATE NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
