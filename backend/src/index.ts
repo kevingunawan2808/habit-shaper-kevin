@@ -7,7 +7,7 @@ import { goalsRouter } from './routes/goals.routes';
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
 
 app.get('/api/health', (_req, res) => {
   res.json({ success: true, data: { status: 'ok' } });

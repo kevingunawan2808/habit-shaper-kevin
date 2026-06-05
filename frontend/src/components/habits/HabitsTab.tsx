@@ -61,69 +61,69 @@ export default function HabitsTab() {
     }
   }
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading) return <p className="text-charcoal/50">Loading...</p>;
 
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Habits</h2>
+        <h2 className="text-lg font-semibold text-deep-teal">Habits</h2>
         <button
           onClick={() => setShowAdd(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1.5 rounded"
+          className="bg-deep-teal hover:bg-deep-teal-dark text-cream text-sm px-3 py-1.5 rounded transition-colors"
         >
           + Add Habit
         </button>
       </div>
 
-      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+      {error && <p className="text-terracotta text-sm mb-3">{error}</p>}
 
       <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+        <table className="min-w-full bg-white border border-cream-dark rounded-lg">
           <thead>
-            <tr className="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <tr className="bg-cream-dark text-left text-xs font-semibold text-deep-teal uppercase tracking-wider">
               <th className="px-4 py-3">#</th>
-              <th className="px-4 py-3">Habit Name</th>
+              <th className="px-4 py-3">Habit</th>
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Current Streak</th>
               <th className="px-4 py-3">Longest Streak</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y divide-cream-dark">
             {habits.map((habit, i) => (
-              <tr key={habit.id} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-gray-500">{i + 1}</td>
-                <td className="px-4 py-3 text-sm font-medium text-gray-900">{habit.name}</td>
+              <tr key={habit.id} className="hover:bg-cream/50">
+                <td className="px-4 py-3 text-sm text-charcoal/50">{i + 1}</td>
+                <td className="px-4 py-3 text-sm font-medium text-deep-teal">{habit.name}</td>
                 <td className="px-4 py-3">
                   {habit.type === 'BUILDING' ? (
-                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">BUILD</span>
+                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-sage/20 text-sage-dark">BUILD</span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">BREAK</span>
+                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-terracotta/20 text-terracotta-dark">BREAK</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-700">{habit.streak} days</td>
-                <td className="px-4 py-3 text-sm text-gray-700">{habit.longest_streak} days</td>
+                <td className="px-4 py-3 text-sm font-semibold text-amber-gold">{habit.streak} days</td>
+                <td className="px-4 py-3 text-sm font-semibold text-charcoal">{habit.longest_streak} days</td>
                 <td className="px-4 py-3">
                   {habit.type === 'BUILDING' ? (
                     habit.marked_today ? (
-                      <span className="text-sm font-semibold text-green-600">{pickMessage(PRAISE, habit.id)}</span>
+                      <span className="text-sm font-semibold text-sage">{pickMessage(PRAISE, habit.id)}</span>
                     ) : (
                       <button
                         onClick={() => doMark(habit.id, 'COMPLETED')}
                         disabled={marking === habit.id}
-                        className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded"
+                        className="bg-sage hover:bg-sage-dark disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded transition-colors"
                       >
                         {marking === habit.id ? '...' : 'Complete'}
                       </button>
                     )
                   ) : (
                     habit.marked_today ? (
-                      <span className="text-sm font-semibold text-orange-500">{pickMessage(MOTIVATION, habit.id)}</span>
+                      <span className="text-sm font-semibold text-terracotta">{pickMessage(MOTIVATION, habit.id)}</span>
                     ) : (
                       <button
                         onClick={() => setConfirmId(habit.id)}
                         disabled={marking === habit.id}
-                        className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded"
+                        className="bg-terracotta hover:bg-terracotta-dark disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded transition-colors"
                       >
                         {marking === habit.id ? '...' : 'Relapse'}
                       </button>
@@ -134,7 +134,7 @@ export default function HabitsTab() {
             ))}
             {habits.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-charcoal/40">
                   No habits yet. Add one to get started.
                 </td>
               </tr>
@@ -143,22 +143,21 @@ export default function HabitsTab() {
         </table>
       </div>
 
-      {/* Relapse confirmation dialog */}
       {confirmId !== null && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <div className="fixed inset-0 bg-charcoal/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 border border-cream-dark">
             <p className="text-3xl mb-3">😔</p>
-            <h3 className="text-lg font-semibold text-gray-900 mb-1">It happens to everyone</h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <h3 className="text-lg font-semibold text-deep-teal mb-1">It happens to everyone</h3>
+            <p className="text-sm text-charcoal/60 mb-4">
               Acknowledging a slip is already a sign of strength. Your streak will reset — but your commitment doesn't have to.
             </p>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setConfirmId(null)} className="text-sm text-gray-600 hover:underline">
+              <button onClick={() => setConfirmId(null)} className="text-sm text-charcoal/60 hover:text-charcoal">
                 Actually, I'm okay
               </button>
               <button
                 onClick={() => doMark(confirmId, 'RELAPSED')}
-                className="bg-red-500 hover:bg-red-600 text-white text-sm px-4 py-2 rounded"
+                className="bg-terracotta hover:bg-terracotta-dark text-white text-sm px-4 py-2 rounded transition-colors"
               >
                 Record relapse
               </button>

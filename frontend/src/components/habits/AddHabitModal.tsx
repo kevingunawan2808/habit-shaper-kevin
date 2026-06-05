@@ -32,34 +32,34 @@ export default function AddHabitModal({ onClose, onCreated }: Props) {
     <Modal title="Add Habit" onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label className="block text-sm font-medium text-charcoal mb-1">Name</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. Exercise daily"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-cream-dark rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-deep-teal"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <label className="block text-sm font-medium text-charcoal mb-1">Type</label>
           <select
             value={type}
             onChange={e => setType(e.target.value as HabitType)}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-cream-dark rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-deep-teal"
           >
             <option value="BUILDING">Building — habit to establish</option>
             <option value="BREAKING">Breaking — habit to stop</option>
           </select>
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-terracotta text-sm">{error}</p>}
         <div className="flex gap-3 justify-end pt-2">
-          <button type="button" onClick={onClose} className="text-sm text-gray-600 hover:underline">
+          <button type="button" onClick={onClose} className="text-sm text-charcoal/60 hover:text-charcoal">
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded"
+            className="bg-deep-teal hover:bg-deep-teal-dark disabled:opacity-50 text-cream text-sm px-4 py-2 rounded transition-colors"
           >
             {loading ? 'Adding...' : 'Add Habit'}
           </button>

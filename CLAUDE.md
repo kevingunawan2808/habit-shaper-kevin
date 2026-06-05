@@ -3,6 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 Never push to repository without my explicit command, but always pull from origin.
+everytime push, add meaningful message based on conversation with claude.
 
 ## Project Overview
 
@@ -94,6 +95,27 @@ Zero UI library — no Material UI, Ant Design, Shadcn, etc. All components are 
 Keep it as light as possible — minimal dependencies, no state management library (use React Context + useState/useReducer).
 All HTTP calls go through a single api/client.ts wrapper that attaches the JWT Authorization header.
 
+## COLOR PALETE
+Use these as main pallete color:
+Deep teal — resolve
+#1B3A4B
+The anchor. Calm discipline, showing up daily.
+Terracotta — grit
+#C75B39
+Earthy warmth. Effort, friction, pushing through.
+Sage green — growth
+#5E8C61
+Slow, compounding progress. New habits taking root.
+Amber gold — reward
+#E0A526
+Streaks, wins, the payoff worth working toward.
+Charcoal — the old self
+#2E2E38
+Bad habits being left behind. Contrast, not the focus.
+Warm cream — clean slate
+#F2EAD8
+Background. Fresh starts, breathing room, calm.
+
 ## MAIN LAYOUT
 
 ┌──────────────────────────────────────────────────────────┐
@@ -136,7 +158,7 @@ Relapse button: POST /api/habits/:id/relapse — shows confirmation dialog first
 
 ## TAB 2: GOALS
 ┌──────────────────────────────────────────────────────────┐
-│  Goals                                     [+ Add Goal]  │
+│  Goals         [+ Link Habit]              [+ Add Goal]  │
 ├──────────────────────────────────────────────────────────┤
 │  ▼ Goal: "Get Fit by December"                           │
 │  ┌────┬────────────────┬──────────┬─────────┬────────┬───┤
@@ -145,7 +167,7 @@ Relapse button: POST /api/habits/:id/relapse — shows confirmation dialog first
 │  │ 1  │ Exercise       │ 🟢 BUILD │ 5 days  │ 12     │[COMPLETE]│
 │  │ 2  │ No Junk Food   │ 🔴 BREAK │ 10 days │ 15     │[RELAPSE]│
 │  └────┴────────────────┴──────────┴─────────┴────────┴───┘
-│  [+ Link Habit]                                          │
+│                                     │
 ├──────────────────────────────────────────────────────────┤
 │  ▶️ Goal: "Read 20 Books This Year"                      │
 │  (collapsed — click to expand)                           │
@@ -239,6 +261,14 @@ cd frontend && npm run dev
 
 > `frontend/tsconfig.json` sets `"noEmit": true` — Vite handles transpilation; `tsc` is for type-checking only. Run `npm run build` (which runs `tsc && vite build`) to produce the `dist/` output that the Dockerfile copies into Nginx.
 
+## SECURITY
+**   Passwordshashedwithbcrypt(costfactor12)•
+   JWTsecretstoredinenvironmentvariable,nevercommittedtosource•
+   Inputvalidationviaexpress-validatororzodonallendpoints•
+   Ratelimitingonauthendpoints(e.g.,5attemptsperminuteperIP)•
+   CORSconfiguredtoallowonlythefrontendorigin•
+   SQLinjectionpreventionviaparameterizedqueries(ORM)•
+   XSSpreventionviaReact'sdefaultescaping+Content-Security-Policyheaders**
 ## Core Domain Concepts
 
 ### Habit Types

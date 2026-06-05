@@ -57,9 +57,9 @@ function missedSummary(habit: HabitWithLogs, weekDates: string[], today: string)
 }
 
 function cellClass(val: CellValue): string {
-  if (val === '✅') return 'text-green-500';
-  if (val === '❌') return 'text-red-500';
-  return 'text-gray-300';
+  if (val === '✅') return 'text-sage';
+  if (val === '❌') return 'text-terracotta';
+  return 'text-charcoal/20';
 }
 
 export default function WeeklyStreakTab() {
@@ -86,39 +86,39 @@ export default function WeeklyStreakTab() {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Weekly Streak</h2>
+      <h2 className="text-lg font-semibold text-deep-teal mb-4">Weekly Streak</h2>
 
       <div className="flex items-center gap-3 mb-4">
         <button
           onClick={() => setWeekStart(prev => addDays(prev, -7))}
-          className="px-2 py-1 text-gray-500 hover:text-gray-900 text-lg"
+          className="px-2 py-1 text-charcoal/40 hover:text-charcoal text-lg"
         >
           ◄
         </button>
-        <span className="text-sm font-medium text-gray-700 min-w-[200px] text-center">{weekLabel}</span>
+        <span className="text-sm font-medium text-charcoal min-w-[200px] text-center">{weekLabel}</span>
         <button
           onClick={() => setWeekStart(prev => addDays(prev, 7))}
-          className="px-2 py-1 text-gray-500 hover:text-gray-900 text-lg"
+          className="px-2 py-1 text-charcoal/40 hover:text-charcoal text-lg"
         >
           ►
         </button>
       </div>
 
-      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
-      {loading && <p className="text-gray-500">Loading...</p>}
+      {error && <p className="text-terracotta text-sm mb-3">{error}</p>}
+      {loading && <p className="text-charcoal/50">Loading...</p>}
 
       {!loading && (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+          <table className="min-w-full bg-white border border-cream-dark rounded-lg">
             <thead>
-              <tr className="bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+              <tr className="bg-cream-dark text-xs font-semibold text-deep-teal uppercase tracking-wider">
                 <th className="px-4 py-3 text-left">Habit</th>
                 {DAY_LABELS.map((d, i) => {
                   const ds = toDateStr(addDays(weekStart, i));
                   return (
                     <th
                       key={d}
-                      className={`px-3 py-3 text-center ${ds === today ? 'bg-blue-50 text-blue-600' : ''}`}
+                      className={`px-3 py-3 text-center ${ds === today ? 'bg-amber-gold/10 text-amber-gold-dark' : ''}`}
                     >
                       {d}
                     </th>
@@ -127,22 +127,25 @@ export default function WeeklyStreakTab() {
                 <th className="px-3 py-3 text-center">Missed</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-cream-dark">
               {habits.map(habit => {
                 const { missed, evaluable } = missedSummary(habit, weekDates, today);
                 return (
-                  <tr key={habit.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{habit.name}</td>
+                  <tr key={habit.id} className="hover:bg-cream/50">
+                    <td className="px-4 py-3 text-sm font-medium text-deep-teal">{habit.name}</td>
                     {weekDates.map((ds, i) => {
                       const val = cellValue(habit, ds, today);
                       return (
-                        <td key={i} className={`px-3 py-3 text-center text-base ${cellClass(val)} ${ds === today ? 'bg-blue-50' : ''}`}>
+                        <td
+                          key={i}
+                          className={`px-3 py-3 text-center text-base ${cellClass(val)} ${ds === today ? 'bg-amber-gold/5' : ''}`}
+                        >
                           {val}
                         </td>
                       );
                     })}
                     <td className="px-3 py-3 text-center">
-                      <span className={`text-xs font-semibold ${missed === 0 ? 'text-green-600' : 'text-red-500'}`}>
+                      <span className={`text-xs font-semibold ${missed === 0 ? 'text-sage' : 'text-terracotta'}`}>
                         {missed}/{evaluable}
                       </span>
                     </td>
@@ -151,7 +154,7 @@ export default function WeeklyStreakTab() {
               })}
               {habits.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-400">
+                  <td colSpan={9} className="px-4 py-8 text-center text-sm text-charcoal/40">
                     No habits found.
                   </td>
                 </tr>

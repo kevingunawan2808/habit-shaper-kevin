@@ -40,11 +40,11 @@ export default function LinkHabitModal({ goalId, linkedHabitIds, onClose, onLink
     <Modal title="Link Habit to Goal" onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Habit</label>
+          <label className="block text-sm font-medium text-charcoal mb-1">Habit</label>
           <select
             value={selectedId}
             onChange={e => setSelectedId(Number(e.target.value))}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-cream-dark rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-deep-teal"
           >
             <option value="">Select a habit...</option>
             {available.map(h => (
@@ -54,18 +54,18 @@ export default function LinkHabitModal({ goalId, linkedHabitIds, onClose, onLink
             ))}
           </select>
           {available.length === 0 && !error && (
-            <p className="text-sm text-gray-400 mt-1">All habits are already linked.</p>
+            <p className="text-sm text-charcoal/40 mt-1">All habits are already linked.</p>
           )}
         </div>
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-terracotta text-sm">{error}</p>}
         <div className="flex gap-3 justify-end pt-2">
-          <button type="button" onClick={onClose} className="text-sm text-gray-600 hover:underline">
+          <button type="button" onClick={onClose} className="text-sm text-charcoal/60 hover:text-charcoal">
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading || !selectedId}
-            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded"
+            className="bg-deep-teal hover:bg-deep-teal-dark disabled:opacity-50 text-cream text-sm px-4 py-2 rounded transition-colors"
           >
             {loading ? 'Linking...' : 'Link Habit'}
           </button>

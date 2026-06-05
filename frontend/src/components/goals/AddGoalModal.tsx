@@ -48,21 +48,21 @@ export default function AddGoalModal({ onClose, onCreated }: Props) {
     <Modal title="Add Goal" onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <label className="block text-sm font-medium text-charcoal mb-1">Title</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="e.g. Get fit by December"
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-cream-dark rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-deep-teal"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+          <label className="block text-sm font-medium text-charcoal mb-1">Description (optional)</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
             rows={2}
-            className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-cream-dark rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-deep-teal"
           />
         </div>
 
@@ -72,46 +72,46 @@ export default function AddGoalModal({ onClose, onCreated }: Props) {
             type="checkbox"
             checked={hasPeriod}
             onChange={e => setHasPeriod(e.target.checked)}
-            className="w-4 h-4 accent-blue-500"
+            className="w-4 h-4 accent-deep-teal"
           />
-          <label htmlFor="has-period" className="text-sm font-medium text-gray-700 cursor-pointer">
+          <label htmlFor="has-period" className="text-sm font-medium text-charcoal cursor-pointer">
             Set a time period
           </label>
         </div>
 
         {hasPeriod && (
-          <div className="grid grid-cols-2 gap-3 pl-6 border-l-2 border-blue-100">
+          <div className="grid grid-cols-2 gap-3 pl-6 border-l-2 border-cream-dark">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
+              <label className="block text-sm font-medium text-charcoal mb-1">Start date</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={e => setStartDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-cream-dark rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-deep-teal"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End date</label>
+              <label className="block text-sm font-medium text-charcoal mb-1">End date</label>
               <input
                 type="date"
                 value={endDate}
                 min={startDate}
                 onChange={e => setEndDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-cream-dark rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-deep-teal"
               />
             </div>
           </div>
         )}
 
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {error && <p className="text-terracotta text-sm">{error}</p>}
         <div className="flex gap-3 justify-end pt-2">
-          <button type="button" onClick={onClose} className="text-sm text-gray-600 hover:underline">
+          <button type="button" onClick={onClose} className="text-sm text-charcoal/60 hover:text-charcoal">
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-sm px-4 py-2 rounded"
+            className="bg-deep-teal hover:bg-deep-teal-dark disabled:opacity-50 text-cream text-sm px-4 py-2 rounded transition-colors"
           >
             {loading ? 'Adding...' : 'Add Goal'}
           </button>

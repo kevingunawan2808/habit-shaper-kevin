@@ -17,26 +17,26 @@ export default function Layout() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">🏋️ Habit Shaper</h1>
+    <div className="min-h-screen bg-cream">
+      <header className="bg-deep-teal px-6 py-3 flex items-center justify-between">
+        <h1 className="text-xl font-bold text-cream">🏋️ Habit Shaper</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{user?.email}</span>
-          <button onClick={logout} className="text-sm text-red-600 hover:underline">
+          <span className="text-sm text-cream/70">{user?.email}</span>
+          <button onClick={logout} className="text-sm text-cream/70 hover:text-cream transition-colors">
             Logout
           </button>
         </div>
       </header>
 
-      <nav className="bg-white border-b border-gray-200 flex justify-center gap-1">
+      <nav className="bg-deep-teal-dark flex justify-center gap-1">
         {(Object.keys(TAB_LABELS) as Tab[]).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${
+            className={`py-3 px-5 text-sm font-medium border-b-2 transition-colors ${
               tab === t
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-amber-gold text-amber-gold'
+                : 'border-transparent text-cream/60 hover:text-cream'
             }`}
           >
             {TAB_LABELS[t]}
