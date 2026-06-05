@@ -10,6 +10,7 @@ export function goalsRouter(pool: Pool): Router {
   router.use(authMiddleware);
   router.get('/', (req, res) => controller.getGoals(req, res));
   router.post('/', (req, res) => controller.createGoal(req, res));
+  router.put('/:id', (req, res) => controller.updateGoal(req, res));
   router.post('/:goalId/habits/:habitId', (req, res) => controller.linkHabit(req, res));
   router.delete('/:goalId/habits/:habitId', (req, res) => controller.unlinkHabit(req, res));
   router.delete('/:id', (req, res) => controller.deleteGoal(req, res));

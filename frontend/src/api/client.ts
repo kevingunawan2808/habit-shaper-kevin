@@ -45,6 +45,10 @@ export const api = {
     list: () => request<Goal[]>('/goals'),
     create: (data: { name: string; description?: string; start_date?: string; end_date?: string }) =>
       request<Goal>('/goals', { method: 'POST', body: JSON.stringify(data) }),
+    update: (id: number, data: { name: string; description?: string; start_date?: string; end_date?: string }) =>
+      request<Goal>(`/goals/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    delete: (id: number) =>
+      request<void>(`/goals/${id}`, { method: 'DELETE' }),
     linkHabit: (goalId: number, habitId: number) =>
       request<void>(`/goals/${goalId}/habits/${habitId}`, { method: 'POST' }),
   },
