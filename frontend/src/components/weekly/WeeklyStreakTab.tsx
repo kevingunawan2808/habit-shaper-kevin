@@ -17,7 +17,10 @@ function addDays(date: Date, n: number): Date {
 }
 
 function toDateStr(date: Date): string {
-  return date.toISOString().slice(0, 10);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -45,12 +48,22 @@ export default function WeeklyStreakTab() {
 
   function cellValue(habit: HabitWithLogs, dateStr: string): CellValue {
     if (dateStr > today) return '—';
-    const habitCreated = habit.created_at.slice(0, 10);
-    if (dateStr < habitCreated) return '—';
 
-    const log = habit.logs.find(l => l.logged_date === dateStr);
-    if (habit.type === 'BUILDING') return log?.status === 'COMPLETED' ? '✅' : '❌';
-    return log?.status === 'RELAPSED' ? '❌' : '✅';
+    // Normalise log dates before comparing (backend may return Date objects or strings)
+    const log = habit.logs.find(l => String(l.logged_date).slice(0, 10) === dateStr);
+
+    if (habit.type === 'BREAKING') {
+      // Clean by default — absence of a relapse log means ✅ for any past day
+      return log?.status === 'RELAPSED' ? '❌' : '✅';
+    }
+
+    // BUILDING: hide days before the habit was created
+    if (!log) {
+      const habitCreated = toDateStr(new Date(habit.created_at));
+      if (dateStr < habitCreated) return '—';
+    }
+
+    return log?.status === 'COMPLETED' ? '✅' : '❌';
   }
 
   function cellClass(val: CellValue): string {

@@ -92,13 +92,17 @@ export default function HabitsTab() {
                       </button>
                     )
                   ) : (
-                    <button
-                      onClick={() => setConfirmId(habit.id)}
-                      disabled={marking === habit.id}
-                      className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded"
-                    >
-                      {marking === habit.id ? '...' : 'Relapse'}
-                    </button>
+                    habit.marked_today ? (
+                      <span className="text-xs text-red-600 font-medium">✗ Relapsed</span>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmId(habit.id)}
+                        disabled={marking === habit.id}
+                        className="bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded"
+                      >
+                        {marking === habit.id ? '...' : 'Relapse'}
+                      </button>
+                    )
                   )}
                 </td>
               </tr>
