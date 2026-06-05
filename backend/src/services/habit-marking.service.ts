@@ -42,12 +42,24 @@ export class HabitMarkingService {
       );
 
       if (status === LogStatus.RELAPSED) {
-        // Streak restarts the day after the relapse
         const tomorrow = addDaysToDateString(loggedDate, 1);
         await conn.query(
           `UPDATE habits SET streak_start_date = ? WHERE id = ?`,
           [tomorrow, habitId]
         );
+      } else if (status === LogStatus.COMPLETED) {
+        const yesterday = addDaysToDateString(loggedDate, -1);
+        const [prevRows] = await conn.query<RowDataPacket[]>(
+          `SELECT 1 FROM habit_logs WHERE habit_id = ? AND logged_date = ? AND status = 'COMPLETED'`,
+          [habitId, yesterday]
+        );
+        if (prevRows.length === 0) {
+          // No log yesterday — this is the start of a new streak
+          await conn.query(
+            `UPDATE habits SET streak_start_date = ? WHERE id = ?`,
+            [loggedDate, habitId]
+          );
+        }
       }
 
       await conn.commit();
@@ -76,5 +88,16 @@ export class HabitMarkingService {
       `DELETE FROM habit_logs WHERE habit_id = ? AND logged_date = ?`,
       [habitId, loggedDate]
     );
+
+    if (habit.type === HabitType.BUILDING && habit.streak_start_date) {
+      const streakStart = String(habit.streak_start_date).slice(0, 10);
+      if (streakStart === loggedDate) {
+        // Today was the first day of the streak; reset since the log is gone
+        await this.pool.query(
+          `UPDATE habits SET streak_start_date = NULL WHERE id = ?`,
+          [habitId]
+        );
+      }
+    }
   }
 }

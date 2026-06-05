@@ -14,7 +14,7 @@ export class StreakService {
     if (habitType === HabitType.BREAKING) {
       return this.calculateBreakingStreak(streakStartDate, timezone);
     }
-    return this.calculateBuildingStreak(habitId, timezone);
+    return this.calculateBuildingStreak(habitId, timezone, streakStartDate);
   }
 
   async calculateLongestStreak(
@@ -41,32 +41,30 @@ export class StreakService {
     return Math.max(0, dateDiffInDays(this.toDateStr(streakStartDate), today));
   }
 
-  private async calculateBuildingStreak(habitId: number, timezone: string): Promise<number> {
-    const yesterday = addDaysToDateString(getLocalDateString(timezone), -1);
+  private async calculateBuildingStreak(
+    habitId: number,
+    timezone: string,
+    streakStartDate: string | null
+  ): Promise<number> {
+    if (!streakStartDate) return 0;
+
+    const today = getLocalDateString(timezone);
+    const yesterday = addDaysToDateString(today, -1);
 
     const [rows] = await this.pool.query<RowDataPacket[]>(
       `SELECT logged_date FROM habit_logs
        WHERE habit_id = ? AND status = 'COMPLETED'
-       ORDER BY logged_date DESC`,
+       ORDER BY logged_date DESC
+       LIMIT 1`,
       [habitId]
     );
 
     if (rows.length === 0) return 0;
 
-    let streak = 0;
-    let expected = yesterday;
+    const latestLog = this.toDateStr(rows[0].logged_date);
+    if (latestLog !== today && latestLog !== yesterday) return 0;
 
-    for (const row of rows) {
-      const loggedDate = this.toDateStr(row.logged_date);
-      if (loggedDate === expected) {
-        streak++;
-        expected = addDaysToDateString(expected, -1);
-      } else if (loggedDate < expected) {
-        break;
-      }
-    }
-
-    return streak;
+    return dateDiffInDays(this.toDateStr(streakStartDate), latestLog) + 1;
   }
 
   private async calculateLongestBuildingStreak(habitId: number): Promise<number> {
