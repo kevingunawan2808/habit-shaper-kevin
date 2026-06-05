@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -34,13 +35,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u);
   }
 
+  async function register(email: string, password: string) {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const { token } = await api.auth.register(email, password, timezone);
+    localStorage.setItem('token', token);
+    const u = await api.auth.me();
+    setUser(u);
+  }
+
   function logout() {
     localStorage.removeItem('token');
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

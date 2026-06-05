@@ -22,6 +22,11 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       }),
+    register: (email: string, password: string, timezone: string) =>
+      request<{ token: string; userId: number }>('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, timezone }),
+      }),
     me: () => request<User>('/auth/me'),
   },
   habits: {
