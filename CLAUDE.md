@@ -2,11 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Never push to repository without my explicit command, but always pull from origin.
+
 ## Project Overview
 
 Habit Shaper is a web-based habit tracking application with streak management.
 
-- **Frontend:** React (TypeScript), served via Nginx
+- **Frontend:** React (TypeScript) + Vite, served via Nginx
 - **Backend:** Node.js + Express (TypeScript)
 - **Database:** MySQL 8.0
 - **Deployment:** Docker Compose with Nginx reverse proxy
@@ -46,15 +48,140 @@ habit-shaper/
 │   │   │   └── habit.types.ts      # Enums & interfaces
 │   │   ├── utils/
 │   │   │   └── timezone.utils.ts   # Timezone-aware date helpers
-│   │   ├── config/                 # (placeholder for DB/env config)
+│   │   ├── config/
+│   │   │   └── db.ts               # mysql2 connection pool
 │   │   └── migrations/            # SQL migration files
-│   └── package.json               # (to be created)
+│   └── package.json
 ├── frontend/
-│   ├── Dockerfile                  # Multi-stage React build
+│   ├── Dockerfile                  # Multi-stage Vite build → Nginx
 │   ├── nginx.conf                  # SPA fallback for client-side routing
-│   └── src/                       # (React app source - to be created)
+│   ├── vite.config.ts              # Vite config; proxies /api → localhost:3000 in dev
+│   └── src/
+│       ├── main.tsx                # React entry point
+│       └── App.tsx                 # Root component (scaffold — UI to be built)
 └── README.md                       # Quick-start and environment docs
 
+## Frontend Specification
+Tech Stack & Principles
+React 18 + TypeScript (Vite bundler)
+Tailwind CSS — the ONLY styling solution. No CSS modules, no styled-components, no other CSS frameworks.
+Zero UI library — no Material UI, Ant Design, Shadcn, etc. All components are hand-built with Tailwind utility classes.
+Keep it as light as possible — minimal dependencies, no state management library (use React Context + useState/useReducer).
+All HTTP calls go through a single api/client.ts wrapper that attaches the JWT Authorization header.
+
+## MAIN LAYOUT
+
+┌──────────────────────────────────────────────────────────┐
+│  🏋️ Habit Shaper                        [User ▼] [Logout] │
+├──────────────────────────────────────────────────────────┤
+│  [ Habits ]  [ Goals ]  [ Weekly Streak ]                │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  (Tab content renders here)                              │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+
+Top bar: App name on the left, user email and logout button on the right.
+Tab bar: 3 tabs — Habits, Goals, Weekly Streak. Active tab is highlighted. Tabs switch content without page navigation (React state, not router)
+
+## TAB 1: HABITS
+┌──────────────────────────────────────────────────────────┐
+│  Habits                                    [+ Add Habit] │
+├────┬────────────────┬───────────┬─────────┬────────┬─────┤
+│ #  │ Habit Name     │ Type      │ Current │Longest │ Act │
+│    │                │           │ Streak  │Streak  │     │
+├────┼────────────────┼───────────┼─────────┼────────┼─────┤
+│ 1  │ Exercise       │ 🟢 BUILD  │ 5 days  │ 12     │ [COMPLETE] │
+│ 2  │ No Smoking     │ 🔴 BREAK  │ 23 days │ 30     │ [RELAPSED] │
+│ 3  │ Read 30 min    │ 🟢 BUILD  │ 0 days  │ 7      │ [COMPLETE] │
+└────┴────────────────┴───────────┴─────────┴────────┴─────┘
+Column	Description
+Row number (1-indexed)
+Habit Name	Title of the habit
+Type	BUILDING (green badge) or BREAKING (red badge)
+Current Streak	Days count from lazy evaluation
+Longest Streak	All-time best streak
+Actions	BUILDING → "Complete" button (green). BREAKING → "Relapse" button (red).
+Behavior:
+
+[+ Add Habit] button (top-right): Opens AddHabitModal — fields: name, description (optional), type (BUILDING/BREAKING).
+Complete button: POST /api/habits/:id/complete — marks today as COMPLETED. Disable after success (already marked).
+Relapse button: POST /api/habits/:id/relapse — shows confirmation dialog first ("Are you sure? This resets your streak."), then submits. Button remains enabled (user could relapse again after midnight).
+
+
+## TAB 2: GOALS
+┌──────────────────────────────────────────────────────────┐
+│  Goals                                     [+ Add Goal]  │
+├──────────────────────────────────────────────────────────┤
+│  ▼ Goal: "Get Fit by December"                           │
+│  ┌────┬────────────────┬──────────┬─────────┬────────┬───┤
+│  │ #  │ Habit Name     │ Type     │ Current │Longest │Act│
+│  ├────┼────────────────┼──────────┼─────────┼────────┼───┤
+│  │ 1  │ Exercise       │ 🟢 BUILD │ 5 days  │ 12     │[COMPLETE]│
+│  │ 2  │ No Junk Food   │ 🔴 BREAK │ 10 days │ 15     │[RELAPSE]│
+│  └────┴────────────────┴──────────┴─────────┴────────┴───┘
+│  [+ Link Habit]                                          │
+├──────────────────────────────────────────────────────────┤
+│  ▶️ Goal: "Read 20 Books This Year"                      │
+│  (collapsed — click to expand)                           │
+└──────────────────────────────────────────────────────────┘
+Structure:
+
+Each goal is a collapsible dropdown (accordion). Click to expand/collapse.
+When expanded, shows the same habit table format as Tab 1, but filtered to only habits linked to that goal. Reuse the HabitTable component.
+[+ Link Habit] button at the bottom of each expanded goal: Opens LinkHabitModal — a dropdown/select of all user habits not yet linked to this goal. Calls POST /api/goals/:goalId/habits with { habitId }.
+[+ Add Goal] button (top-right): Opens AddGoalModal — fields: title, description (optional), target date (optional).
+
+## TAB 3 : WEEKLY STREAK
+┌──────────────────────────────────────────────────────────┐
+│  Weekly Streak                                           │
+│  ┌──────────────────────────────────┐                    │
+│  │ ◄  Jun 2 – Jun 8, 2026       ►  │                    │
+│  └──────────────────────────────────┘                    │
+├──────────────────┬─────┬─────┬─────┬─────┬─────┬────┬───┤
+│ Habit            │ Mon │ Tue │ Wed │ Thu │ Fri │Sat │Sun│
+├──────────────────┼─────┼─────┼─────┼─────┼─────┼────┼───┤
+│ Exercise         │  ✅  │  ✅  │  ✅  │  ❌  │  ✅  │ ✅  │ — │
+│ No Smoking       │  ✅  │  ✅  │  ✅  │  ✅  │  ✅  │ ✅  │ — │
+│ Read 30 min      │  ✅  │  ❌  │  ✅  │  ✅  │  ❌  │ ✅  │ — │
+└──────────────────┴─────┴─────┴─────┴─────┴─────┴────┴───┘
+Behavior:
+
+Week picker (top-left): Shows the current week range (Mon–Sun). ◄ and ► arrows navigate to previous/next week.
+Table: Rows = all user habits. Columns = Mon through Sun of the selected week.
+Cell values:
+✅ (green check) — BUILDING: a COMPLETED log exists for that date. BREAKING: no RELAPSED log exists (clean day).
+❌ (red cross) — BUILDING: no COMPLETED log for that date (missed). BREAKING: a RELAPSED log exists.
+— (gray dash) — Date is in the future (not yet evaluable) or before the habit was created.
+API call: GET /api/habits/weekly?startDate=2026-06-02&endDate=2026-06-08 — returns all habits with their logs for the range. Frontend maps sparse log data to the full 7-day grid.
+
+Modals
+All modals use a simple overlay pattern: semi-transparent black backdrop + centered white card. Close on backdrop click or ✕ button.
+
+Modal	Fields	API Call
+AddHabitModal	Name (required), Description, Type (BUILD/BREAK)	POST /api/habits
+AddGoalModal	Title (required), Description, Target Date	POST /api/goals
+LinkHabitModal	Dropdown of unlinked habits (select one)	POST /api/goals/:id/habits
+Login Page
+Simple centered card: email input, password input, "Sign In" button. No registration page initially — use API to seed users or add a "Sign Up" link later.
+
+POST /api/auth/login → returns { token, user } → store token in localStorage.
+On app load, check localStorage for token. If present, validate with GET /api/auth/me. If invalid, redirect to login.
+Frontend Code Conventions
+No CSS files except index.css which contains only the 3 Tailwind directives (@tailwind base/components/utilities).
+All styling via Tailwind classes directly in JSX. Use className="..." only.
+Color palette: Stick to Tailwind defaults — green-500/600 for building/success, red-500/600 for breaking/relapse, gray-* for neutral, blue-500 for primary actions.
+Responsive: Mobile-first. Tables scroll horizontally on small screens (overflow-x-auto).
+Loading states: Simple spinner or "Loading..." text. No skeleton screens.
+Error states: Red text below the relevant component. Toast notifications are unnecessary.
+No router library — use React state to switch between tabs (useState<'habits' | 'goals' | 'weekly'>).
+Fetch, not Axios — use native fetch in api/client.ts.
+API Design Conventions
+All API routes are prefixed with /api/
+Authentication via JWT Bearer tokens in Authorization header
+Request/response bodies are JSON
+Error responses follow: { "success": false, "message": "..." }
+Success responses follow: { "success": true, "data": {...} }
 
 ## Commands
 
@@ -74,6 +201,18 @@ docker compose down -v
 # Access MySQL CLI
 docker compose exec mysql mysql -u habit_user -phabit_password habit_shaper
 ```
+
+### Local development (without Docker)
+
+```bash
+# Backend — ts-node-dev with hot reload on :3000
+cd backend && npm run dev
+
+# Frontend — Vite dev server on :5173, /api proxied to localhost:3000
+cd frontend && npm run dev
+```
+
+> `frontend/tsconfig.json` sets `"noEmit": true` — Vite handles transpilation; `tsc` is for type-checking only. Run `npm run build` (which runs `tsc && vite build`) to produce the `dist/` output that the Dockerfile copies into Nginx.
 
 ## Core Domain Concepts
 

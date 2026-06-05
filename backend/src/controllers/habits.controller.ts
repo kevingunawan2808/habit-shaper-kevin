@@ -119,6 +119,54 @@ export class HabitsController {
     }
   }
 
+  async getWeeklyHabits(req: Request, res: Response): Promise<void> {
+    const userId = req.user!.userId;
+    const { startDate, endDate } = req.query as { startDate?: string; endDate?: string };
+
+    if (!startDate || !endDate) {
+      res.status(400).json({ success: false, message: 'startDate and endDate are required' });
+      return;
+    }
+
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT h.id, h.name, h.type, h.streak_start_date, h.created_at,
+         hl.logged_date, hl.status AS log_status
+       FROM habits h
+       LEFT JOIN habit_logs hl ON hl.habit_id = h.id
+         AND hl.logged_date BETWEEN ? AND ?
+       WHERE h.user_id = ?
+       ORDER BY h.created_at ASC, hl.logged_date ASC`,
+      [startDate, endDate, userId]
+    );
+
+    const habitMap = new Map<number, {
+      id: number; name: string; type: string;
+      streak_start_date: string | null; created_at: string;
+      logs: { logged_date: string; status: string }[];
+    }>();
+
+    for (const row of rows) {
+      if (!habitMap.has(row.id)) {
+        habitMap.set(row.id, {
+          id: row.id, name: row.name, type: row.type,
+          streak_start_date: row.streak_start_date,
+          created_at: row.created_at instanceof Date
+            ? row.created_at.toISOString()
+            : String(row.created_at),
+          logs: [],
+        });
+      }
+      if (row.logged_date) {
+        const logDate = row.logged_date instanceof Date
+          ? row.logged_date.toISOString().slice(0, 10)
+          : String(row.logged_date).slice(0, 10);
+        habitMap.get(row.id)!.logs.push({ logged_date: logDate, status: row.log_status });
+      }
+    }
+
+    res.json({ success: true, data: Array.from(habitMap.values()) });
+  }
+
   async deleteHabit(req: Request, res: Response): Promise<void> {
     const userId = req.user!.userId;
     const habitId = parseInt(req.params.id, 10);

@@ -77,4 +77,17 @@ export class AuthController {
 
     res.json({ success: true, data: { token, userId: user.id } });
   }
+
+  async me(req: Request, res: Response): Promise<void> {
+    const userId = req.user!.userId;
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      'SELECT id, email, timezone FROM users WHERE id = ?',
+      [userId]
+    );
+    if (rows.length === 0) {
+      res.status(404).json({ success: false, message: 'User not found' });
+      return;
+    }
+    res.json({ success: true, data: rows[0] });
+  }
 }
