@@ -43,7 +43,7 @@ export const api = {
   },
   goals: {
     list: () => request<Goal[]>('/goals'),
-    create: (data: { name: string; description?: string }) =>
+    create: (data: { name: string; description?: string; start_date?: string; end_date?: string }) =>
       request<Goal>('/goals', { method: 'POST', body: JSON.stringify(data) }),
     linkHabit: (goalId: number, habitId: number) =>
       request<void>(`/goals/${goalId}/habits/${habitId}`, { method: 'POST' }),

@@ -7,18 +7,35 @@ interface Props {
   onCreated: () => void;
 }
 
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 export default function AddGoalModal({ onClose, onCreated }: Props) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [hasPeriod, setHasPeriod] = useState(false);
+  const [startDate, setStartDate] = useState(today());
+  const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError('');
     if (!name.trim()) { setError('Name is required'); return; }
+    if (hasPeriod && !endDate) { setError('End date is required for a timed goal'); return; }
+    if (hasPeriod && endDate <= startDate) { setError('End date must be after start date'); return; }
+
     setLoading(true);
     try {
-      await api.goals.create({ name: name.trim(), description: description.trim() || undefined });
+      await api.goals.create({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        start_date: hasPeriod ? startDate : undefined,
+        end_date: hasPeriod ? endDate : undefined,
+      });
       onCreated();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create goal');
@@ -48,6 +65,44 @@ export default function AddGoalModal({ onClose, onCreated }: Props) {
             className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            id="has-period"
+            type="checkbox"
+            checked={hasPeriod}
+            onChange={e => setHasPeriod(e.target.checked)}
+            className="w-4 h-4 accent-blue-500"
+          />
+          <label htmlFor="has-period" className="text-sm font-medium text-gray-700 cursor-pointer">
+            Set a time period
+          </label>
+        </div>
+
+        {hasPeriod && (
+          <div className="grid grid-cols-2 gap-3 pl-6 border-l-2 border-blue-100">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Start date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={e => setStartDate(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">End date</label>
+              <input
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={e => setEndDate(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+        )}
+
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <div className="flex gap-3 justify-end pt-2">
           <button type="button" onClick={onClose} className="text-sm text-gray-600 hover:underline">

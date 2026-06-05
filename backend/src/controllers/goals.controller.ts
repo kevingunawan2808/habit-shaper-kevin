@@ -22,7 +22,7 @@ export class GoalsController {
     const yesterday = addDaysToDateString(today, -1);
 
     const [goals] = await this.pool.query<RowDataPacket[]>(
-      `SELECT g.id, g.name, g.description, g.created_at,
+      `SELECT g.id, g.name, g.description, g.start_date, g.end_date, g.created_at,
          JSON_ARRAYAGG(
            IF(gh.habit_id IS NOT NULL,
              JSON_OBJECT(
@@ -45,6 +45,8 @@ export class GoalsController {
 
     const data = goals.map((g) => ({
       ...g,
+      start_date: g.start_date ? toDateStr(g.start_date) : null,
+      end_date: g.end_date ? toDateStr(g.end_date) : null,
       habits: ((g.habits as unknown[]) || []).filter(Boolean).map((h: unknown) => {
         const habit = h as {
           id: number; name: string; type: string;
@@ -68,21 +70,32 @@ export class GoalsController {
 
   async createGoal(req: Request, res: Response): Promise<void> {
     const userId = req.user!.userId;
-    const { name, description } = req.body;
+    const { name, description, start_date, end_date } = req.body;
 
     if (!name) {
       res.status(400).json({ success: false, message: 'Name is required' });
       return;
     }
 
+    if (start_date && end_date && start_date >= end_date) {
+      res.status(400).json({ success: false, message: 'End date must be after start date' });
+      return;
+    }
+
     const [result] = await this.pool.query<ResultSetHeader>(
-      'INSERT INTO goals (user_id, name, description) VALUES (?, ?, ?)',
-      [userId, name, description ?? null]
+      'INSERT INTO goals (user_id, name, description, start_date, end_date) VALUES (?, ?, ?, ?, ?)',
+      [userId, name, description ?? null, start_date ?? null, end_date ?? null]
     );
 
     res.status(201).json({
       success: true,
-      data: { id: result.insertId, name, description: description ?? null, habits: [] },
+      data: {
+        id: result.insertId, name,
+        description: description ?? null,
+        start_date: start_date ?? null,
+        end_date: end_date ?? null,
+        habits: [],
+      },
     });
   }
 

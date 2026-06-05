@@ -4,6 +4,30 @@ import type { Goal } from '../../types';
 import AddGoalModal from './AddGoalModal';
 import LinkHabitModal from './LinkHabitModal';
 
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function goalPeriod(goal: Goal): { percent: number; label: string; color: string } | null {
+  if (!goal.start_date || !goal.end_date) return null;
+  const start = new Date(goal.start_date).getTime();
+  const end = new Date(goal.end_date).getTime();
+  const now = new Date(todayStr()).getTime();
+  const total = end - start;
+  const elapsed = now - start;
+  const percent = Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+  const daysLeft = Math.ceil((end - now) / 86400000);
+
+  let label: string;
+  if (daysLeft < 0) label = `Ended ${Math.abs(daysLeft)}d ago`;
+  else if (daysLeft === 0) label = 'Ends today';
+  else label = `${daysLeft}d left`;
+
+  const color = percent >= 90 ? 'bg-red-500' : percent >= 60 ? 'bg-amber-400' : 'bg-blue-500';
+  return { percent, label, color };
+}
+
 export default function GoalsTab() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,6 +86,25 @@ export default function GoalsTab() {
               )}
               <span className="ml-auto text-xs text-gray-400">{goal.habits.length} habit{goal.habits.length !== 1 ? 's' : ''}</span>
             </button>
+
+            {(() => {
+              const period = goalPeriod(goal);
+              if (!period) return null;
+              return (
+                <div className="px-4 pb-3">
+                  <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                    <span>{goal.start_date} → {goal.end_date}</span>
+                    <span className={period.percent >= 90 ? 'text-red-500 font-medium' : period.percent >= 60 ? 'text-amber-500 font-medium' : ''}>{period.label}</span>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-2">
+                    <div
+                      className={`${period.color} h-2 rounded-full transition-all`}
+                      style={{ width: `${period.percent}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
 
             {expanded.has(goal.id) && (
               <div className="px-4 pb-4 border-t border-gray-100">
