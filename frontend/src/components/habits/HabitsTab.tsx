@@ -60,6 +60,7 @@ export default function HabitsTab() {
               <th className="px-4 py-3">Habit Name</th>
               <th className="px-4 py-3">Type</th>
               <th className="px-4 py-3">Current Streak</th>
+              <th className="px-4 py-3">Longest Streak</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
@@ -76,15 +77,20 @@ export default function HabitsTab() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-700">{habit.streak} days</td>
+                <td className="px-4 py-3 text-sm text-gray-700">{habit.longest_streak} days</td>
                 <td className="px-4 py-3">
                   {habit.type === 'BUILDING' ? (
-                    <button
-                      onClick={() => doMark(habit.id, 'COMPLETED')}
-                      disabled={marking === habit.id}
-                      className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded"
-                    >
-                      {marking === habit.id ? '...' : 'Complete'}
-                    </button>
+                    habit.marked_today ? (
+                      <span className="text-xs text-green-600 font-medium">✓ Done</span>
+                    ) : (
+                      <button
+                        onClick={() => doMark(habit.id, 'COMPLETED')}
+                        disabled={marking === habit.id}
+                        className="bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded"
+                      >
+                        {marking === habit.id ? '...' : 'Complete'}
+                      </button>
+                    )
                   ) : (
                     <button
                       onClick={() => setConfirmId(habit.id)}
@@ -99,7 +105,7 @@ export default function HabitsTab() {
             ))}
             {habits.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-400">
+                <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-400">
                   No habits yet. Add one to get started.
                 </td>
               </tr>

@@ -17,24 +17,42 @@ export class HabitsController {
   async getHabits(req: Request, res: Response): Promise<void> {
     const userId = req.user!.userId;
 
+    const [userRows] = await this.pool.query<RowDataPacket[]>(
+      'SELECT timezone FROM users WHERE id = ?',
+      [userId]
+    );
+    const timezone = (userRows[0]?.timezone as string) || 'UTC';
+    const todayDate = getLocalDateString(timezone);
+
     const [habits] = await this.pool.query<RowDataPacket[]>(
-      `SELECT h.*, u.timezone FROM habits h
-       JOIN users u ON u.id = h.user_id
+      `SELECT h.*, hl_today.status AS today_status
+       FROM habits h
+       LEFT JOIN habit_logs hl_today ON hl_today.habit_id = h.id AND hl_today.logged_date = ?
        WHERE h.user_id = ?
        ORDER BY h.created_at ASC`,
-      [userId]
+      [todayDate, userId]
     );
 
     const habitsWithStreak = await Promise.all(
       habits.map(async (habit) => {
-        const streak = await this.streakService.calculateStreak(
-          habit.id,
-          habit.timezone,
-          habit.type as HabitType,
-          habit.streak_start_date
-        );
-        const { timezone: _tz, ...rest } = habit;
-        return { ...rest, streak };
+        const [streak, longestStreak] = await Promise.all([
+          this.streakService.calculateStreak(
+            habit.id, timezone, habit.type as HabitType, habit.streak_start_date
+          ),
+          this.streakService.calculateLongestStreak(
+            habit.id, timezone, habit.type as HabitType, habit.streak_start_date, habit.created_at
+          ),
+        ]);
+        return {
+          id: habit.id,
+          name: habit.name,
+          type: habit.type,
+          streak_start_date: habit.streak_start_date,
+          created_at: habit.created_at,
+          streak,
+          longest_streak: longestStreak,
+          marked_today: habit.today_status !== null,
+        };
       })
     );
 

@@ -12,8 +12,10 @@ export interface Habit {
   name: string;
   type: HabitType;
   streak: number;
+  longest_streak: number;
   streak_start_date: string | null;
   created_at: string;
+  marked_today: boolean;
 }
 
 export interface HabitLog {

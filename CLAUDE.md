@@ -52,10 +52,35 @@ habit-shaper/
 │   │   │   └── db.ts               # mysql2 connection pool
 │   │   └── migrations/            # SQL migration files
 │   └── package.json
-├── frontend/
-│   ├── Dockerfile                  # Multi-stage Vite build → Nginx
+frontend/
+│   ├── Dockerfile                  # Multi-stage React build
 │   ├── nginx.conf                  # SPA fallback for client-side routing
-│   ├── vite.config.ts              # Vite config; proxies /api → localhost:3000 in dev
+│   ├── package.json
+│   ├── tailwind.config.js
+│   ├── postcss.config.js
+│   ├── index.html
+│   └── src/
+│       ├── main.tsx                # React entry point
+│       ├── App.tsx                 # Root component with tab routing
+│       ├── index.css               # Tailwind directives only
+│       ├── api/
+│       │   └── client.ts           # Fetch wrapper with JWT auth
+│       ├── context/
+│       │   └── AuthContext.tsx      # Auth state provider
+│       ├── pages/
+│       │   ├── LoginPage.tsx        # Email + password login
+│       │   ├── HabitsTab.tsx        # Tab 1: All habits table
+│       │   ├── GoalsTab.tsx         # Tab 2: Goals with collapsible habit tables
+│       │   └── WeeklyStreakTab.tsx   # Tab 3: Weekly streak grid
+│       ├── components/
+│       │   ├── TabBar.tsx           # 3-tab navigation (Habits | Goals | Weekly Streak)
+│       │   ├── HabitTable.tsx       # Reusable habit table (used in Tab 1 & Tab 2)
+│       │   ├── AddHabitModal.tsx     # Modal: create new habit
+│       │   ├── AddGoalModal.tsx      # Modal: create new goal
+│       │   ├── LinkHabitModal.tsx    # Modal: link existing habit to a goal
+│       │   └── WeekPicker.tsx       # Date filter for weekly view
+│       └── types/
+│           └── index.ts             # Shared frontend typeslocalhost:3000 in dev
 │   └── src/
 │       ├── main.tsx                # React entry point
 │       └── App.tsx                 # Root component (scaffold — UI to be built)
